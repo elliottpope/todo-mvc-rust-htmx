@@ -1,10 +1,10 @@
 use axum::{response::{Html, IntoResponse}, routing::{get, post, delete, put}, Router, Form, extract::{Path, Query}};
 use askama::Template;
 use serde::{Deserialize, Serialize};
-use std::fs::{File, copy};
-use std::io::{BufReader, BufWriter};
+use crate::db::{read_todos_from_file, write_todos_to_file, initialize_todos};
 
 pub mod templates;
+pub mod db;
 
 #[tokio::main]
 async fn main() {
@@ -34,10 +34,6 @@ async fn main() {
     let _ = initialize_todos("init.json", "todos.json").await;
     
     axum::serve(listener, app).await.unwrap();
-}
-
-async fn initialize_todos(source: &str, destination: &str) {
-    copy(source, destination).unwrap();
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -77,20 +73,6 @@ async fn completed() -> impl IntoResponse {
         show_complete: true,
     };
     Html(template.render().unwrap())
-}
-
-fn read_todos_from_file<P: AsRef<std::path::Path>>(path: P) -> Result<Vec<Todo>, Box<dyn std::error::Error>> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    let todos: Vec<Todo> = serde_json::from_reader(reader)?;
-    Ok(todos)
-}
-
-fn write_todos_to_file<P: AsRef<std::path::Path>>(path: P, todos: &Vec<Todo>) -> Result<(), Box<dyn std::error::Error>> {
-    let file = File::create(path)?;
-    let writer = BufWriter::new(file);
-    serde_json::to_writer_pretty(writer, todos)?;
-    Ok(())
 }
 
 #[derive(Deserialize, Serialize, Debug)]
