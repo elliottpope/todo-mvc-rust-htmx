@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::fs::{File, copy};
 use std::io::{BufReader, BufWriter};
 
+pub mod templates;
+
 #[tokio::main]
 async fn main() {
 
@@ -38,50 +40,13 @@ async fn initialize_todos(source: &str, destination: &str) {
     copy(source, destination).unwrap();
 }
 
-#[derive(Template)]
-#[template(path = "index.html")]
-struct Index {
-    show_active: bool,
-    show_complete: bool,
-}
-
-#[derive(Template)]
-#[template(path = "todo-list.html")]
-struct Todos {
-    todo: Vec<Todo>,
-    done: Vec<Todo>,
-    show_active: bool,
-    show_complete: bool,
-    total: usize,
-}
-
-impl Todos {
-    fn new(todos: Vec<Todo>, show_active: bool, show_complete: bool) -> Self {
-        let total = todos.len();
-        let (done, todo): (Vec<Todo>, Vec<Todo>) = todos.into_iter()
-            .partition(|todo| todo.completed);
-        Todos {
-            show_active: show_active,
-            show_complete: show_complete,
-            done: done,
-            todo: todo,
-            total: total,
-        }
-    }
-}
-
 #[derive(Deserialize, Serialize, Debug, Clone)]
-struct Todo {
+pub struct Todo {
     id: usize,
     text: String,
     completed: bool,
 }
 
-#[derive(Template)]
-#[template(path = "edit-todo.html")]
-struct EditTodo {
-    todo: Todo
-}
 
 #[derive(Deserialize, Serialize, Debug)]
 struct NewTodo {
@@ -89,7 +54,7 @@ struct NewTodo {
 }
 
 async fn handler() -> Html<String> {
-    let template = Index{
+    let template = templates::Index{
         show_active: true,
         show_complete: true,
     };
@@ -98,7 +63,7 @@ async fn handler() -> Html<String> {
 
 async fn active() -> impl IntoResponse {
     println!("called active endpoint");
-    let template = Index{
+    let template = templates::Index{
         show_active: true,
         show_complete: false,
     };
@@ -107,7 +72,7 @@ async fn active() -> impl IntoResponse {
 
 async fn completed() -> impl IntoResponse {
     println!("called completed endpoint");
-    let template = Index{
+    let template = templates::Index{
         show_active: false,
         show_complete: true,
     };
@@ -139,14 +104,14 @@ async fn get_all_todos(Query(show): Query<TodosQuery>) -> impl IntoResponse {
     let show_complete = show.complete.unwrap_or(true);
 
     let todos = read_todos_from_file("todos.json").unwrap();
-    let template = Todos::new(todos, show_active, show_complete);
+    let template = templates::Todos::new(todos, show_active, show_complete);
     Html(template.render().unwrap())
 }
 
 
 async fn todos() -> Html<String> {
     let todos = read_todos_from_file("todos.json").unwrap();
-    let template = Todos::new(todos, true, true);
+    let template = templates::Todos::new(todos, true, true);
     Html(template.render().unwrap())
 }
 
@@ -249,7 +214,7 @@ async fn edit_todo(Path(id): Path<usize>) -> impl IntoResponse {
         Some(todo) => todo,
         None => return Html("".to_string())
     };
-    let template = EditTodo {
+    let template = templates::EditTodo {
         todo: todo.clone(),
     };
     Html(template.render().unwrap())
