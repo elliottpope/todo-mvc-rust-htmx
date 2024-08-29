@@ -1,0 +1,39 @@
+{% if total > 0 %}
+<section id="main" class="main">
+    <input id="toggle-all" class="toggle-all" type="checkbox" hx-put="/todos?status=complete" hx-target="#todos">
+    <label for="toggle-all">Mark all as complete</label>
+    <ul class="todo-list">
+        {% include "todos.html" %}
+    </ul>
+</section>
+<footer class="footer">
+    <!-- This should be `0 items left` by default -->
+    <span class="todo-count"><strong>{{ todo.len() }}</strong> item left</span>
+    <!-- Remove this if you don't implement routing -->
+    <ul class="filters">
+        <li>
+            {% if show_active && show_complete %}
+            <a class="selected" href="/">All</a>
+            {% else %}
+            <a href="/">All</a>
+            {% endif %}
+        </li>
+        <li>
+            {% if show_active && !show_complete %}
+            <a class="selected" href="/active">Active</a>
+            {% else %}
+            <a href="/active">Active</a>
+            {% endif %}
+        </li>
+        <li>
+            {% if !show_active && show_complete %}
+            <a class="selected" href="/completed">Completed</a>
+            {% else %}
+            <a href="/completed">Completed</a>
+            {% endif %}
+        </li>
+    </ul>
+    <!-- Hidden if no completed items are left ↓ -->
+    <button class="clear-completed" hx-delete="/todos" hx-target="#todos">Clear completed</button>
+</footer>
+{% endif %}

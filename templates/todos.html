@@ -1,0 +1,10 @@
+{% if show_complete %}
+{% for todo in done %}
+{% include "todo.html" %}
+{% endfor %}
+{% endif %}
+{% if show_active %}
+{% for todo in todo %}
+{% include "todo.html" %}
+{% endfor %}
+{% endif %}

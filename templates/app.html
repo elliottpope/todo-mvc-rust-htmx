@@ -1,0 +1,25 @@
+<section class="todoapp">
+    <header class="header">
+        <h1>todos</h1>
+        <form hx-post="/todo" hx-target="#todos" hx-trigger="keyup[enterKey],submit" hx-on::after-request="this.reset()">
+            <input name="text" type="text" 
+                class="new-todo" placeholder="What needs to be done?" autofocus="">
+        </form>
+    </header>
+    {% if show_active && show_complete %}
+    <section id="todos" hx-get="/todos" hx-trigger="load" >
+    {% else if show_active %}
+    <section id="todos" hx-get="/todos?complete=false" hx-trigger="load" >
+    {% else if show_complete %}
+    <section id="todos" hx-get="/todos?active=false" hx-trigger="load" >
+    {% endif %}
+    </section>
+</section>
+<footer class="info">
+    <p>Double-click to edit a todo</p>
+    <!-- Remove the below line ↓ -->
+    <p>Template by <a href="http://sindresorhus.com">Sindre Sorhus</a></p>
+    <!-- Change this out with your name and url ↓ -->
+    <p>Created by <a href="http://todomvc.com">you</a></p>
+    <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+</footer>

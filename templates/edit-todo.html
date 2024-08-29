@@ -1,0 +1,3 @@
+<form hx-post="/todo/{{ todo.id }}" hx-target="#todos" hx-trigger="keyup[enterKey],submit" hx-on::after-request="this.reset()">
+    <input name="text" type="text" class="edit new-todo" value="{{ todo.text }}" hx-get="/todos" hx-target="#todos" hx-trigger="keyup[key=='Escape'],blur">
+</form>
