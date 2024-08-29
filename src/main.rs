@@ -153,15 +153,17 @@ async fn todos() -> Html<String> {
 async fn add_todo(Form(to_add): Form<NewTodo>) -> impl IntoResponse {
     let mut todo = read_todos_from_file("todos.json").unwrap();
     let new_id = todo.len() + 1;
-    let new_text = to_add.text.clone();
-    let new_todo = Todo {
-        id: new_id,
-        text: new_text.trim().to_string(),
-        completed: false,
-    };
-    todo.push(new_todo);
-    println!("New todos {:#?}", todo);
-    write_todos_to_file("todos.json", &todo).unwrap();
+    let new_text = to_add.text.clone().trim().to_string();
+    if new_text != "" {
+        let new_todo = Todo {
+            id: new_id,
+            text: new_text.trim().to_string(),
+            completed: false,
+        };
+        todo.push(new_todo);
+        println!("New todos {:#?}", todo);
+        write_todos_to_file("todos.json", &todo).unwrap();
+    }
     todos().await
 }
 
@@ -212,10 +214,15 @@ async fn update_todo(Path(id): Path<usize>, Query(status): Query<TodoStatusUpdat
 
 async fn update_todo_text(Path(id): Path<usize>, Form(to_edit): Form<NewTodo>) -> impl IntoResponse {
     let mut todo = read_todos_from_file("todos.json").unwrap();
-    for t in todo.iter_mut() {
-        if t.id == id {
-            t.text = to_edit.text;
-            break;
+    let new_text = to_edit.text.trim().to_string();
+    if new_text == "" {
+        todo.retain(|todo| todo.id != id);
+    } else {
+        for t in todo.iter_mut() {
+            if t.id == id {
+                t.text = new_text;
+                break;
+            }
         }
     }
     println!("New todos {:#?}", todo);
